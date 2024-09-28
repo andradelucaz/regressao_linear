@@ -1,0 +1,166 @@
+---
+title: "Linear Regression - House prices prediction"
+format: html
+editor: visual
+---
+
+## Linear Regression Model - House price prediction
+
+1.  Desenvolva um modelo de regressão linear para prever o preço das casas (preços.RData) com base nas variáveis fornecidas:
+
+    -   SalePrice: Preço de venda em dólares
+
+    -   Basement_Area: Área do porão em pés quadrados
+
+    -   Lot_Area: Tamanho do lote em pés quadrados \\
+
+    -   Heating_QC: Qualidade e condição do aquecimento
+
+    -   Season_Sold: Estação quando a casa foi vendida
+
+    -   Gr_Liv_Area: Área acima do nível do solo em pés quadrados
+
+    -   Garage_Area: Tamanho da garagem em pés quadrados
+
+    -   Deck_Porch_Area: Área total de decks e varandas em pés quadrados
+
+    -   Age_Sold: Idade da casa quando vendida, em anos
+
+    -   Bedroom_AbvGr: Quartos acima do nível do solo Total_Bathroom:
+
+    -   Número total de banheiros (meio banheiro contado como 10%)
+
+#### Libraries
+
+```{r libraries, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(PerformanceAnalytics)
+library(janitor)
+library(corrplot)
+library(lmtest)
+library(GGally)
+library(olsrr)
+
+```
+
+### Data Prep
+
+#### Import data
+
+```{r import_data, message=FALSE, warning=FALSE}
+
+price <- readr::read_rds('dados/precos.rds')
+
+```
+
+#### Data Summary
+
+```{r summary, warning=FALSE, message=FALSE}
+
+summary(price)
+
+```
+
+
+#### Cleanup 
+
+```{r cleanup, message=FALSE, warning=FALSE}
+
+price <- janitor::clean_names(price)
+
+```
+
+#### Transformation
+
+```{r transformation, message=FALSE, warning=FALSE}
+
+# heating and season_sold columns are a character columns, need to be removed 
+
+
+
+price <- price %>% 
+  dplyr::select(-heating_qc, season_sold)
+
+```
+
+### Analysis
+
+#### Model
+
+- First attempt
+
+```{r first_model}
+
+first_model <- lm(sale_price ~., 
+                  data = price)
+
+summary(first_model)
+
+```
+
+- Stepwise model
+
+```{r}
+
+step_model <- step(first_model, direction = 'both')
+
+summary(step_model)
+
+```
+```{r}
+
+```
+
+
+#### Checcking assumptions
+
+- Normality test
+
+```{r}
+
+hist(first_model$residuals)
+qqnorm(first_model$residuals)
+qqline(first_model$residuals)
+
+
+qqnorm(step_model$residuals)
+qqline(step_model$residuals)
+```
+- Linearity relationship between dependent and independent variables
+
+```{r}
+
+lmtest::raintest(first_model)
+
+```
+- Homocedaticity test
+
+```{r}
+olsrr::ols_plot_resid_fit(first_model)
+
+olsrr::ols_test_breusch_pagan(first_model)
+
+```
+
+
+- Checking colniearity/multicolinearity
+
+The correlation matrix below don't indicate any colinearity constraint
+
+```{r}
+
+df_features <- price %>% dplyr::select(-sale_price)
+
+cor_matrix <- cor(df_features)
+
+corrplot::corrplot(cor_matrix, method = "color", type = "upper", tl.col = "black", tl.srt = 45, 
+         tl.cex = 0.8, addCoef.col = "black", number.cex = 0.7, mar = c(0,0,2,0)) 
+
+olsrr::ols_vif_tol(first_model)
+
+```
+
+#### Model analysis
+
+mode
