@@ -113,7 +113,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ucimlrepo)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fastDummies)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fastDummies)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(olsrr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dataset" class="level4">
@@ -474,13 +475,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>De acordo com a matriz acima as variaveis horsepower, weight, displacement e cylinders_up_to_four apresentam niveis de colinearidade excessivos entre si, por isso ferei a remoçao de algumas delas, tomando os seguintes critérios: - displacement possui os maiores niveis de colinearidade com as outras variaveis, por isso será removida - weight apresenta colinearidade com horsepower e discplacemente por isso tambem será removida, levando em consideracao que ao remove-la nao restará nenhuma relacao de colineridade entre as ariaveis independentes</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>auto_mpg <span class="ot">&lt;-</span> auto_mpg <span class="sc">%&gt;%</span> </span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>displacement,</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>weight)</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(auto_mpg)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>corrplot<span class="sc">::</span><span class="fu">corrplot</span>(cor_matrix, <span class="at">method =</span> <span class="st">"color"</span>, <span class="at">type =</span> <span class="st">"upper"</span>, <span class="at">tl.col =</span> <span class="st">"black"</span>, <span class="at">tl.srt =</span> <span class="dv">45</span>, </span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">tl.cex =</span> <span class="fl">0.8</span>, <span class="at">addCoef.col =</span> <span class="st">"black"</span>, <span class="at">number.cex =</span> <span class="fl">0.7</span>, <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">0</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>displacement)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(auto_mpg)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>corrplot<span class="sc">::</span><span class="fu">corrplot</span>(cor_matrix, <span class="at">method =</span> <span class="st">"color"</span>, <span class="at">type =</span> <span class="st">"upper"</span>, <span class="at">tl.col =</span> <span class="st">"black"</span>, <span class="at">tl.srt =</span> <span class="dv">45</span>, </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">tl.cex =</span> <span class="fl">0.8</span>, <span class="at">addCoef.col =</span> <span class="st">"black"</span>, <span class="at">number.cex =</span> <span class="fl">0.7</span>, <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">0</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -494,7 +494,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="model" class="level2">
 <h2 class="anchored" data-anchor-id="model">Model</h2>
-<p>A primeira tentativa de criacao do modelo utiliza uma abordagem simples e direta. Os resultados se mostraram bons, de certa forma; - Testes F e t satisfatorios - R2 e adjusted R2 por volta de 0.8</p>
+<p>A primeira tentativa de criacao do modelo utiliza uma abordagem simples e direta. Os resultados se mostraram bons, de certa forma: - Testes F e t satisfatorios (exceto para horsepower e acceleration) - R2 e adjusted R2 por volta de 0.8</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>first_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(mpg <span class="sc">~</span> ., <span class="at">data =</span> auto_mpg)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(first_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -505,64 +505,101 @@ lm(formula = mpg ~ ., data = auto_mpg)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--9.2637 -2.2703 -0.5045  1.7597 13.8825 
+-9.4524 -1.9497 -0.0326  1.8243 13.6545 
 
 Coefficients:
-                      Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)          -14.44054    4.84258  -2.982  0.00305 ** 
-horsepower            -0.09077    0.00886 -10.245  &lt; 2e-16 ***
-acceleration          -0.36712    0.09198  -3.991 7.87e-05 ***
-model_year             0.68568    0.05381  12.743  &lt; 2e-16 ***
-origin_US             -2.39349    0.47280  -5.062 6.42e-07 ***
-cylinders_up_to_four   4.77481    0.56220   8.493 4.41e-16 ***
+                       Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)          -1.831e+01  4.507e+00  -4.061 5.92e-05 ***
+horsepower           -9.441e-03  1.296e-02  -0.728 0.466888    
+weight               -4.612e-03  5.694e-04  -8.100 7.33e-15 ***
+acceleration          4.581e-04  9.647e-02   0.005 0.996214    
+model_year            7.415e-01  5.028e-02  14.748  &lt; 2e-16 ***
+origin_US            -1.680e+00  4.464e-01  -3.763 0.000194 ***
+cylinders_up_to_four  2.268e+00  6.054e-01   3.746 0.000207 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 3.548 on 386 degrees of freedom
-Multiple R-squared:  0.796, Adjusted R-squared:  0.7933 
-F-statistic: 301.2 on 5 and 386 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 3.284 on 385 degrees of freedom
+Multiple R-squared:  0.8257,    Adjusted R-squared:  0.823 
+F-statistic:   304 on 6 and 385 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div>
-<p>Checando se o metodo stepwise de selecao de variaveis será capaz de fornecer um modelo melhor</p>
+<p>Checando se o metodo stepwise de selecao de variaveis será capaz de fornecer um modelo melhor. O metodo de elecao de variaveis apresentpou um modelo com metricas de eficiencia semelhantes ao primeiro modelo, utilizando menos variavies, ou seja, de menor complexidade mas mais assertivo.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>step_model <span class="ot">&lt;-</span> <span class="fu">step</span>(first_model, <span class="at">direction =</span> <span class="st">'both'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Start:  AIC=998.83
-mpg ~ horsepower + acceleration + model_year + origin_US + cylinders_up_to_four
+<pre><code>Start:  AIC=939.14
+mpg ~ horsepower + weight + acceleration + model_year + origin_US + 
+    cylinders_up_to_four
 
                        Df Sum of Sq    RSS     AIC
-&lt;none&gt;                              4859.5  998.83
-- acceleration          1    200.54 5060.0 1012.68
-- origin_US             1    322.63 5182.1 1022.03
-- cylinders_up_to_four  1    908.09 5767.6 1063.99
-- horsepower            1   1321.47 6180.9 1091.12
-- model_year            1   2044.15 6903.6 1134.47</code></pre>
+- acceleration          1      0.00 4151.9  937.14
+- horsepower            1      5.72 4157.6  937.68
+&lt;none&gt;                              4151.9  939.14
+- cylinders_up_to_four  1    151.36 4303.3  951.18
+- origin_US             1    152.70 4304.6  951.30
+- weight                1    707.56 4859.5  998.83
+- model_year            1   2345.57 6497.5 1112.70
+
+Step:  AIC=937.14
+mpg ~ horsepower + weight + model_year + origin_US + cylinders_up_to_four
+
+                       Df Sum of Sq    RSS     AIC
+- horsepower            1     11.81 4163.7  936.26
+&lt;none&gt;                              4151.9  937.14
++ acceleration          1      0.00 4151.9  939.14
+- cylinders_up_to_four  1    153.05 4304.9  949.33
+- origin_US             1    153.30 4305.2  949.36
+- weight                1    908.10 5060.0 1012.68
+- model_year            1   2354.96 6506.9 1111.27
+
+Step:  AIC=936.26
+mpg ~ weight + model_year + origin_US + cylinders_up_to_four
+
+                       Df Sum of Sq    RSS     AIC
+&lt;none&gt;                              4163.7  936.26
++ horsepower            1     11.81 4151.9  937.14
++ acceleration          1      6.09 4157.6  937.68
+- cylinders_up_to_four  1    148.73 4312.4  948.01
+- origin_US             1    150.13 4313.8  948.14
+- weight                1   2141.14 6304.8 1096.90
+- model_year            1   2725.85 6889.5 1131.67</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(step_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
-lm(formula = mpg ~ horsepower + acceleration + model_year + origin_US + 
-    cylinders_up_to_four, data = auto_mpg)
+lm(formula = mpg ~ weight + model_year + origin_US + cylinders_up_to_four, 
+    data = auto_mpg)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--9.2637 -2.2703 -0.5045  1.7597 13.8825 
+-9.5568 -1.9685 -0.0568  1.8033 13.6683 
 
 Coefficients:
-                      Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)          -14.44054    4.84258  -2.982  0.00305 ** 
-horsepower            -0.09077    0.00886 -10.245  &lt; 2e-16 ***
-acceleration          -0.36712    0.09198  -3.991 7.87e-05 ***
-model_year             0.68568    0.05381  12.743  &lt; 2e-16 ***
-origin_US             -2.39349    0.47280  -5.062 6.42e-07 ***
-cylinders_up_to_four   4.77481    0.56220   8.493 4.41e-16 ***
+                       Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)          -1.941e+01  3.942e+00  -4.925 1.25e-06 ***
+weight               -4.984e-03  3.533e-04 -14.107  &lt; 2e-16 ***
+model_year            7.579e-01  4.761e-02  15.917  &lt; 2e-16 ***
+origin_US            -1.661e+00  4.447e-01  -3.736 0.000216 ***
+cylinders_up_to_four  2.233e+00  6.005e-01   3.718 0.000230 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 3.548 on 386 degrees of freedom
-Multiple R-squared:  0.796, Adjusted R-squared:  0.7933 
-F-statistic: 301.2 on 5 and 386 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 3.28 on 387 degrees of freedom
+Multiple R-squared:  0.8252,    Adjusted R-squared:  0.8234 
+F-statistic: 456.7 on 4 and 387 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<p>A comparacao da eficiencia dos modelos tambem pode ser feita atraves do calulo da metrica AIC e os resultos sugerem ligeira superioridade do primeiro modelo. Como a diferença é bem pequena continuarei a utilizar o modelo stepwise como principal</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(first_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2053.591</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(step_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2050.704</code></pre>
 </div>
 </div>
 <section id="redisuals" class="level3">
@@ -571,7 +608,7 @@ F-statistic: 301.2 on 5 and 386 DF,  p-value: &lt; 2.2e-16</code></pre>
 <h4 class="anchored" data-anchor-id="normalidade-de-residuos">Normalidade de residuos</h4>
 <p>Os gráficos abaixo apontam para uma distribuiçao normal dos residuos, o que satisfaz uma das condiçoes conceituais do modelo</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(first_model<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(step_model<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -579,8 +616,8 @@ F-statistic: 301.2 on 5 and 386 DF,  p-value: &lt; 2.2e-16</code></pre>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(first_model<span class="sc">$</span>residuals)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(first_model<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(step_model<span class="sc">$</span>residuals)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(step_model<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -589,15 +626,15 @@ F-statistic: 301.2 on 5 and 386 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div>
 </div>
-<p>Abaixo apliquei o Shapiro test para confirmar a normalidade residual e ela foi atestada</p>
+<p>Abaixo apliquei o Shapiro test para confirmar a normalidade residual e ela nao foi atestada</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(first_model<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(step_model<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Shapiro-Wilk normality test
 
-data:  first_model$residuals
-W = 0.96671, p-value = 8.775e-08</code></pre>
+data:  step_model$residuals
+W = 0.96785, p-value = 1.371e-07</code></pre>
 </div>
 </div>
 </section>
@@ -605,18 +642,18 @@ W = 0.96671, p-value = 8.775e-08</code></pre>
 <h4 class="anchored" data-anchor-id="homocedasticidade">Homocedasticidade</h4>
 <p>O gráfico de residuos abaixo aponta a media zero para a variancia, o que é bom, mas ainda tenho duvidas em relacao a existencia de padrão na variancia dos residuos</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>olsrr<span class="sc">::</span><span class="fu">ols_plot_resid_fit</span>(first_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>olsrr<span class="sc">::</span><span class="fu">ols_plot_resid_fit</span>(step_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Fuel_Consumption_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Fuel_Consumption_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>Aplicando o testde e Breusch-Pagan é possivel afirmar que a variancia nao é constante, portante o modelo não foi atestado</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>olsrr<span class="sc">::</span><span class="fu">ols_test_breusch_pagan</span>(first_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>olsrr<span class="sc">::</span><span class="fu">ols_test_breusch_pagan</span>(step_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  Breusch Pagan Test for Heteroskedasticity
@@ -632,8 +669,8 @@ W = 0.96671, p-value = 8.775e-08</code></pre>
          Test Summary           
  -------------------------------
  DF            =    1 
- Chi2          =    28.94256 
- Prob &gt; Chi2   =    7.455653e-08 </code></pre>
+ Chi2          =    43.92311 
+ Prob &gt; Chi2   =    3.415323e-11 </code></pre>
 </div>
 </div>
 </section>
@@ -641,14 +678,13 @@ W = 0.96671, p-value = 8.775e-08</code></pre>
 <h4 class="anchored" data-anchor-id="multicolinearity">Multicolinearity</h4>
 <p>Para atestar a existencia de multicolinearidade no modelo utilizarei a analise VIF</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>olsrr<span class="sc">::</span><span class="fu">ols_vif_tol</span>(first_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>olsrr<span class="sc">::</span><span class="fu">ols_vif_tol</span>(step_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>             Variables Tolerance      VIF
-1           horsepower 0.2768578 3.611963
-2         acceleration 0.4999788 2.000085
-3           model_year 0.8194251 1.220368
-4            origin_US 0.6129769 1.631383
-5 cylinders_up_to_four 0.4069562 2.457267</code></pre>
+1               weight 0.3055218 3.273089
+2           model_year 0.8944519 1.118003
+3            origin_US 0.5922528 1.688468
+4 cylinders_up_to_four 0.3048856 3.279919</code></pre>
 </div>
 </div>
 </section>

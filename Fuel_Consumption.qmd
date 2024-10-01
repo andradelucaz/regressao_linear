@@ -24,6 +24,7 @@ library(car)
 library(ucimlrepo)
 library(magrittr)
 library(fastDummies)
+library(olsrr)
 
 ```
 
@@ -293,8 +294,7 @@ de colineridade entre as ariaveis independentes
 ```{r}
 
 auto_mpg <- auto_mpg %>% 
-  dplyr::select(-displacement,
-                -weight)
+  dplyr::select(-displacement)
 
 cor_matrix <- cor(auto_mpg)
 
@@ -305,8 +305,8 @@ corrplot::corrplot(cor_matrix, method = "color", type = "upper", tl.col = "black
 ## Model
 
 A primeira tentativa de criacao do modelo utiliza uma abordagem simples e direta.
-Os resultados se mostraram bons, de certa forma;
--   Testes F e t satisfatorios
+Os resultados se mostraram bons, de certa forma:
+-   Testes F e t satisfatorios (exceto para horsepower e acceleration)
 -   R2 e adjusted R2 por volta de 0.8
 
 ```{r first_model, echo = TRUE}
@@ -316,13 +316,25 @@ summary(first_model)
 
 ```
 Checando se o metodo stepwise de selecao de variaveis será capaz de fornecer um
-modelo melhor
+modelo melhor. O metodo de elecao de variaveis apresentpou um modelo com metricas 
+de eficiencia semelhantes ao primeiro modelo, utilizando menos variavies, ou seja, 
+de menor complexidade mas mais assertivo.
 
 ```{r step_model}
 
 step_model <- step(first_model, direction = 'both')
 summary(step_model)
 ```
+A comparacao da eficiencia dos modelos tambem pode ser feita atraves do calulo da
+metrica AIC e os resultos sugerem ligeira superioridade do primeiro modelo.
+Como a diferença é bem pequena continuarei a utilizar o modelo stepwise como principal
+```{r}
+AIC(first_model)
+
+AIC(step_model)
+
+```
+
 
 ### Redisuals
 
@@ -333,25 +345,27 @@ satisfaz uma das condiçoes conceituais do modelo
 
 ```{r residuals_normality}
 
-hist(first_model$residuals)
-qqnorm(first_model$residuals)
-qqline(first_model$residuals)
+hist(step_model$residuals)
+qqnorm(step_model$residuals)
+qqline(step_model$residuals)
 
 ```
-Abaixo apliquei o Shapiro test para confirmar a normalidade residual e ela foi 
+Abaixo apliquei o Shapiro test para confirmar a normalidade residual e ela nao foi 
 atestada
 
 ```{r shapiro_test}
 
-shapiro.test(first_model$residuals)
+shapiro.test(step_model$residuals)
 
 ```
 #### Homocedasticidade
 
 O gráfico de residuos abaixo aponta a media zero para a variancia, o que é bom, 
 mas ainda tenho duvidas em relacao a existencia de padrão na variancia dos residuos
+
 ```{r}
-olsrr::ols_plot_resid_fit(first_model)
+
+olsrr::ols_plot_resid_fit(step_model)
 ```
 
 Aplicando o testde e Breusch-Pagan é possivel afirmar que a variancia nao é constante,
@@ -359,7 +373,7 @@ portante o modelo não foi atestado
 
 ```{r breusch_pagan}
 
-olsrr::ols_test_breusch_pagan(first_model)
+olsrr::ols_test_breusch_pagan(step_model)
 
 ```
 #### Multicolinearity
@@ -368,7 +382,7 @@ Para atestar a existencia de multicolinearidade no modelo utilizarei a analise V
 
 ```{r vif}
 
-olsrr::ols_vif_tol(first_model)
+olsrr::ols_vif_tol(step_model)
 
 ```
 
