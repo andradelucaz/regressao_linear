@@ -187,6 +187,19 @@ auto_mpg <- auto_mpg %>%
 
 ```
 
+
+#### Outliers
+
+Como é possível perceber através dos graficos box_plot, as variaveis independentes
+horsepower e acceleration. 
+
+```{r}
+auto_mpg <- auto_mpg %>% 
+  dplyr::mutate(horsepower = log10(horsepower+1),
+                acceleration = log10(acceleration+1))
+```
+
+
 #### Categorical variables
 
 Em relacao as variaveis categoricas foi possivel notar atraves do grafico de barras
@@ -294,7 +307,8 @@ de colineridade entre as ariaveis independentes
 ```{r}
 
 auto_mpg <- auto_mpg %>% 
-  dplyr::select(-displacement)
+  dplyr::select(-displacement,
+                -weight)
 
 cor_matrix <- cor(auto_mpg)
 
@@ -385,4 +399,62 @@ Para atestar a existencia de multicolinearidade no modelo utilizarei a analise V
 olsrr::ols_vif_tol(step_model)
 
 ```
+
+#### Box Cox
+
+As the residual analysis shows that its variance is not constant and its not
+normal distributed I'll use Box-Cox transformation to make another try.
+
+```{r box_cox}
+lambda <- car::powerTransform(auto_mpg$mpg)
+
+auto_mpg$mpg_adj <- forecast::BoxCox(auto_mpg$mpg, lambda = lambda$lambda)
+
+```
+
+Verificando o modelo com após a transformacao do y
+
+```{r new_model}
+
+auto_mpg_adj <- auto_mpg %>% dplyr::select(-mpg)
+
+new_model <- lm(mpg_adj ~ ., auto_mpg_adj)
+
+step_new_model <- step(new_model, direction = 'both')
+summary(step_new_model)
+
+```
+##### Residuals normality distribution
+
+```{r}
+hist(step_new_model$residuals)
+
+qqnorm(step_new_model$residuals)
+qqline(step_new_model$residuals)
+```
+
+
+```{r}
+shapiro.test(step_new_model$residuals)
+```
+
+
+##### Multicolineartity
+
+```{r}
+olsrr::ols_vif_tol(step_new_model)
+```
+
+##### Homocedasticity test
+
+```{r}
+
+olsrr::ols_plot_resid_fit(step_new_model)
+
+```
+
+```{r}
+olsrr::ols_test_breusch_pagan(step_new_model)
+```
+
 
