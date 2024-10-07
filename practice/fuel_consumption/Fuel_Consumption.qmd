@@ -1,6 +1,6 @@
 ---
 title: "Fuel consuption prediction"
-format: html
+format: docx
 editor: visual
 ---
 
@@ -41,7 +41,7 @@ auto_mpg <- data.frame(data$original)
 #### Variable Dictionary - Auto MPG
 
 | **Variable**   | **Type**    | **Description**                                         | **Units**        | **Missing Values** |
-|--------------|--------------|----------------|--------------|--------------|
+|---------------|---------------|---------------|---------------|---------------|
 | `mpg`          | Continuous  | Fuel consumption in miles per gallon (target variable). | Miles per gallon | No                 |
 | `cylinders`    | Discrete    | Number of engine cylinders.                             | Integer          | No                 |
 | `displacement` | Continuous  | Engine displacement.                                    | Cubic inches     | No                 |
@@ -62,7 +62,7 @@ head(auto_mpg)
 
 O summary abaixo fornece um resumo das variaveis do dataset e as principais medidas descritivas associadas. É possivel constatar que:
 
--    a variavael horsepower possui 6 registros NA
+-   a variavael horsepower possui 6 registros NA
 
 -   as variaveis car_name e origin podem ser tomadas como categoricas - a variavel model_year é uma variavel discreta
 
@@ -134,9 +134,8 @@ for ( i in cat_variables){
 gridExtra::grid.arrange(grobs = bar_plt, nrow = 4)
 
 ```
-Na matriz de correlaçao abaixo é possível observar que as variaveis weight e
-displacement apresenda colinearidade o que nos da um indicativo de que uma vez 
-presente no modelo podem ser causadoras de multicolinearidade.
+
+Na matriz de correlaçao abaixo é possível observar que as variaveis weight e displacement apresenda colinearidade o que nos da um indicativo de que uma vez presente no modelo podem ser causadoras de multicolinearidade.
 
 ```{r correlation}
 
@@ -149,6 +148,7 @@ corrplot::corrplot(cor_matrix, method = "color", type = "upper", tl.col = "black
          tl.cex = 0.8, addCoef.col = "black", number.cex = 0.7, mar = c(0,0,2,0)) 
 
 ```
+
 Examinando relaçao de linearidade com a variavel dependente
 
 ```{r scater_plot }
@@ -176,9 +176,7 @@ gridExtra::grid.arrange(grobs = lin_plot, nrow = 3, ncol = 3)
 
 #### Missing
 
-Nesse caso decidi retirar os missing cases da base. Como o numero de missing 
-representa apenas 1,5% dos data point entendo que nao haverá grande impacto na 
-construcao de um modelo eficiente
+Nesse caso decidi retirar os missing cases da base. Como o numero de missing representa apenas 1,5% dos data point entendo que nao haverá grande impacto na construcao de um modelo eficiente
 
 ```{r horsepower_filter }
 
@@ -187,11 +185,9 @@ auto_mpg <- auto_mpg %>%
 
 ```
 
-
 #### Outliers
 
-Como é possível perceber através dos graficos box_plot, as variaveis independentes
-horsepower e acceleration. 
+Como é possível perceber através dos graficos box_plot, as variaveis independentes horsepower e acceleration.
 
 ```{r}
 auto_mpg <- auto_mpg %>% 
@@ -199,22 +195,16 @@ auto_mpg <- auto_mpg %>%
                 acceleration = log10(acceleration+1))
 ```
 
-
 #### Categorical variables
 
-Em relacao as variaveis categoricas foi possivel notar atraves do grafico de barras
-que o excessivo numero de categorias na variavel cars_name nao contribui para um modelo
-de grande eficiencia sem aumetar de maneira expressiva a sua complexidade. Dessa 
-forma farei a remoçao dessa variavel do dataset.
+Em relacao as variaveis categoricas foi possivel notar atraves do grafico de barras que o excessivo numero de categorias na variavel cars_name nao contribui para um modelo de grande eficiencia sem aumetar de maneira expressiva a sua complexidade. Dessa forma farei a remoçao dessa variavel do dataset.
 
 ```{r car_name_select }
 auto_mpg <- auto_mpg %>% 
   dplyr::select(-car_name)
 ```
 
-Ja quanto a variavel origin a abordagem vai se baser na quantidade de cada categoria
-A tabela abaixo nos mostra que 62% nos carros sao da origem de codigo americanos 
-(cod = 1), portanto farei um agrupamento dos demais em um único grupo
+Ja quanto a variavel origin a abordagem vai se baser na quantidade de cada categoria A tabela abaixo nos mostra que 62% nos carros sao da origem de codigo americanos (cod = 1), portanto farei um agrupamento dos demais em um único grupo
 
 ```{r origin_tbl}
 
@@ -224,6 +214,7 @@ auto_mpg %>%
   dplyr::mutate(freq = total/sum(total))
 
 ```
+
 ```{r}
 auto_mpg <- auto_mpg %>% 
   dplyr::mutate(origin = 
@@ -231,9 +222,7 @@ auto_mpg <- auto_mpg %>%
                                  'Non_US'))
 ```
 
-Em seguida utilizarei de variaveis dummy para representar a variavel origin. 
-Dessa forma conseguirei utilizar do poder de explicacao dessa variavel no modelo
-
+Em seguida utilizarei de variaveis dummy para representar a variavel origin. Dessa forma conseguirei utilizar do poder de explicacao dessa variavel no modelo
 
 ```{r origin_dummy}
 
@@ -244,14 +233,7 @@ auto_mpg <- fastDummies::dummy_columns(auto_mpg,
 
 ```
 
-
-Utilizarei a mesma abordagem para a variavel cylinders. A tabela abaixo mostra 
-que mais de 50% dos carros sao modelos de 4 cilindros, modelos de 6 e 8 cilindoros
-possuem frequencia semelhante, 21% e 25% respectivamente. Modelos de 3 e 5 cilindros
-representam em torno de apenas 1%. Usando ainda o contexto de negocio, farei o 
-agrupamento em apenas duas categorias:  até 4 cilindros (up_to_four ) e a partir 
-de 5 cilindros (five_more)
-
+Utilizarei a mesma abordagem para a variavel cylinders. A tabela abaixo mostra que mais de 50% dos carros sao modelos de 4 cilindros, modelos de 6 e 8 cilindoros possuem frequencia semelhante, 21% e 25% respectivamente. Modelos de 3 e 5 cilindros representam em torno de apenas 1%. Usando ainda o contexto de negocio, farei o agrupamento em apenas duas categorias: até 4 cilindros (up_to_four ) e a partir de 5 cilindros (five_more)
 
 ```{r}
 auto_mpg %>% 
@@ -259,6 +241,7 @@ auto_mpg %>%
   dplyr::summarise(total = dplyr::n()) %>% 
   dplyr::mutate(freq = total/sum(total))
 ```
+
 ```{r}
 
 auto_mpg <- auto_mpg %>% 
@@ -268,8 +251,7 @@ auto_mpg <- auto_mpg %>%
 
 ```
 
-Em seguida utilizarei de variaveis dummy para representar a variavel cylinders. 
-Dessa forma conseguirei utilizar do poder de explicacao dessa variavel no modelo.
+Em seguida utilizarei de variaveis dummy para representar a variavel cylinders. Dessa forma conseguirei utilizar do poder de explicacao dessa variavel no modelo.
 
 ```{r cylnders_dummy}
 
@@ -282,9 +264,7 @@ auto_mpg <- fastDummies::dummy_columns(auto_mpg,
 
 #### Muticolinearity
 
-Após a transformação das variaveis categoricas é interessante voltar à analise 
-de multicolinearidade.
-
+Após a transformação das variaveis categoricas é interessante voltar à analise de multicolinearidade.
 
 ```{r multicolinearity}
 
@@ -294,15 +274,8 @@ corrplot::corrplot(cor_matrix, method = "color", type = "upper", tl.col = "black
          tl.cex = 0.8, addCoef.col = "black", number.cex = 0.7, mar = c(0,0,2,0)) 
 
 ```
-De acordo com a matriz acima as variaveis horsepower, weight, displacement e 
-cylinders_up_to_four apresentam niveis de colinearidade excessivos entre si, 
-por isso ferei a remoçao de algumas delas, tomando os seguintes critérios:
--  displacement possui os maiores niveis de colinearidade com as outras variaveis,
-por isso será removida
--   weight apresenta colinearidade com horsepower e discplacemente por isso tambem 
-será removida, levando em consideracao que ao remove-la nao restará nenhuma relacao
-de colineridade entre as ariaveis independentes
 
+De acordo com a matriz acima as variaveis horsepower, weight, displacement e cylinders_up_to_four apresentam niveis de colinearidade excessivos entre si, por isso ferei a remoçao de algumas delas, tomando os seguintes critérios: - displacement possui os maiores niveis de colinearidade com as outras variaveis, por isso será removida - weight apresenta colinearidade com horsepower e discplacemente por isso tambem será removida, levando em consideracao que ao remove-la nao restará nenhuma relacao de colineridade entre as ariaveis independentes
 
 ```{r}
 
@@ -316,12 +289,10 @@ corrplot::corrplot(cor_matrix, method = "color", type = "upper", tl.col = "black
          tl.cex = 0.8, addCoef.col = "black", number.cex = 0.7, mar = c(0,0,2,0)) 
 
 ```
+
 ## Model
 
-A primeira tentativa de criacao do modelo utiliza uma abordagem simples e direta.
-Os resultados se mostraram bons, de certa forma:
--   Testes F e t satisfatorios (exceto para horsepower e acceleration)
--   R2 e adjusted R2 por volta de 0.8
+A primeira tentativa de criacao do modelo utiliza uma abordagem simples e direta. Os resultados se mostraram bons, de certa forma: - Testes F e t satisfatorios (exceto para horsepower e acceleration) - R2 e adjusted R2 por volta de 0.8
 
 ```{r first_model, echo = TRUE}
 
@@ -329,19 +300,17 @@ first_model <- lm(mpg ~ ., data = auto_mpg)
 summary(first_model)
 
 ```
-Checando se o metodo stepwise de selecao de variaveis será capaz de fornecer um
-modelo melhor. O metodo de elecao de variaveis apresentpou um modelo com metricas 
-de eficiencia semelhantes ao primeiro modelo, utilizando menos variavies, ou seja, 
-de menor complexidade mas mais assertivo.
+
+Checando se o metodo stepwise de selecao de variaveis será capaz de fornecer um modelo melhor. O metodo de elecao de variaveis apresentpou um modelo com metricas de eficiencia semelhantes ao primeiro modelo, utilizando menos variavies, ou seja, de menor complexidade mas mais assertivo.
 
 ```{r step_model}
 
 step_model <- step(first_model, direction = 'both')
 summary(step_model)
 ```
-A comparacao da eficiencia dos modelos tambem pode ser feita atraves do calulo da
-metrica AIC e os resultos sugerem ligeira superioridade do primeiro modelo.
-Como a diferença é bem pequena continuarei a utilizar o modelo stepwise como principal
+
+A comparacao da eficiencia dos modelos tambem pode ser feita atraves do calulo da metrica AIC e os resultos sugerem ligeira superioridade do primeiro modelo. Como a diferença é bem pequena continuarei a utilizar o modelo stepwise como principal
+
 ```{r}
 AIC(first_model)
 
@@ -349,13 +318,11 @@ AIC(step_model)
 
 ```
 
-
 ### Redisuals
 
 #### Normalidade de residuos
 
-Os gráficos abaixo apontam para uma distribuiçao normal dos residuos, o que
-satisfaz uma das condiçoes conceituais do modelo
+Os gráficos abaixo apontam para uma distribuiçao normal dos residuos, o que satisfaz uma das condiçoes conceituais do modelo
 
 ```{r residuals_normality}
 
@@ -364,32 +331,32 @@ qqnorm(step_model$residuals)
 qqline(step_model$residuals)
 
 ```
-Abaixo apliquei o Shapiro test para confirmar a normalidade residual e ela nao foi 
-atestada
+
+Abaixo apliquei o Shapiro test para confirmar a normalidade residual e ela nao foi atestada
 
 ```{r shapiro_test}
 
 shapiro.test(step_model$residuals)
 
 ```
+
 #### Homocedasticidade
 
-O gráfico de residuos abaixo aponta a media zero para a variancia, o que é bom, 
-mas ainda tenho duvidas em relacao a existencia de padrão na variancia dos residuos
+O gráfico de residuos abaixo aponta a media zero para a variancia, o que é bom, mas ainda tenho duvidas em relacao a existencia de padrão na variancia dos residuos
 
 ```{r}
 
 olsrr::ols_plot_resid_fit(step_model)
 ```
 
-Aplicando o testde e Breusch-Pagan é possivel afirmar que a variancia nao é constante,
-portante o modelo não foi atestado
+Aplicando o testde e Breusch-Pagan é possivel afirmar que a variancia nao é constante, portante o modelo não foi atestado
 
 ```{r breusch_pagan}
 
 olsrr::ols_test_breusch_pagan(step_model)
 
 ```
+
 #### Multicolinearity
 
 Para atestar a existencia de multicolinearidade no modelo utilizarei a analise VIF
@@ -402,8 +369,7 @@ olsrr::ols_vif_tol(step_model)
 
 #### Box Cox
 
-As the residual analysis shows that its variance is not constant and its not
-normal distributed I'll use Box-Cox transformation to make another try.
+As the residual analysis shows that its variance is not constant and its not normal distributed I'll use Box-Cox transformation to make another try.
 
 ```{r box_cox}
 lambda <- car::powerTransform(auto_mpg$mpg)
@@ -424,6 +390,7 @@ step_new_model <- step(new_model, direction = 'both')
 summary(step_new_model)
 
 ```
+
 ##### Residuals normality distribution
 
 ```{r}
@@ -433,11 +400,9 @@ qqnorm(step_new_model$residuals)
 qqline(step_new_model$residuals)
 ```
 
-
 ```{r}
 shapiro.test(step_new_model$residuals)
 ```
-
 
 ##### Multicolineartity
 
@@ -456,5 +421,3 @@ olsrr::ols_plot_resid_fit(step_new_model)
 ```{r}
 olsrr::ols_test_breusch_pagan(step_new_model)
 ```
-
-
